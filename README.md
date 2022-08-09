@@ -29,7 +29,7 @@ The commands to install the libriaries:
 
 3. Dataset
 
-The data have to be in the text file. Every text (twitt) has to be in separate row. Here is the pattern: class (tabulation) text.
+The data have to be in the text file. Every text (twitt) has to be in separate line. Here is the pattern: class (tabulation) text.
 Each class have to be represented as diferent integer. You can find the example data in ML4_text.txt file.
 
 # Uczenie maszynowe - Automatyczna klasyfikacja tekstów. <br> Autor: Krzysztof Danielak </br>

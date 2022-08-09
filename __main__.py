@@ -15,7 +15,6 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import VotingClassifier
 import sys
-from sklearn.model_selection import train_test_split
 
 def read_txt(path):
     try:
@@ -110,8 +109,9 @@ def main():
     testset = ''
     classif = ''
     representation = "tf-idf"
+    ngram=1
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "ht:c:b", ["test=", "clf="])
+        opts, args = getopt.getopt(sys.argv[2:], "ht:c:b:n:", ["test=", "clf="])
     except getopt.GetoptError:
         print('__main__.py <learnset> -t <testset> -c <classifier> [-b]')
         sys.exit(2)
@@ -125,6 +125,13 @@ def main():
             classif = arg
         elif opt == '-b':
             representation = "bag"
+        elif opt == "-n":
+            arg = int(arg)
+            if arg <= 0:
+                print("N has to be a positive integer.")
+                sys.exit(2)
+            else:
+                ngram = arg
     print("Classifier: "+classif)
     learnset= sys.argv[1]
     data = read_txt(learnset)
@@ -134,7 +141,7 @@ def main():
         data_test = read_txt(testset)
     else:
         data_test =''
-    X, X_Test = txt_representation(representation, data, data_test, 1)
+    X, X_Test = txt_representation(representation, data, data_test, ngram)
     y = data['class']
 
     k_fold = KFold(n_splits=10, shuffle=True, random_state=None)
