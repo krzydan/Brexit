@@ -53,6 +53,7 @@ def read_txt(path):
     return data
 
 def txt_representation(mode, data, data_test, n):
+    '''Determines text representation - Bag-of-words or Term Frequency-Inverse Documenty Frequency and n for n-gram model.'''
     if mode == "bag":
         X = bag(data, data_test, n)
         return X
@@ -61,6 +62,7 @@ def txt_representation(mode, data, data_test, n):
         return X
 
 def bag(data, data_test, n):
+    '''Returns data text from train and test sets represented as Bag-of-Words using n-gram model.'''
     cnt = CountVectorizer(ngram_range=(1, n))
     cnt.fit(data['text_final'])
     X = cnt.transform(data['text_final'])
@@ -68,6 +70,7 @@ def bag(data, data_test, n):
     return X,X_test
 
 def tfidf(data, data_test,n):
+    '''Returns data text represented using Term Frequency-Inverse Document Frequency and n-gram model. '''
     Tfidf_vect = TfidfVectorizer(max_features=5000, ngram_range= (1, n))
     Tfidf_vect.fit(data['text_final'])
     if type(data_test)==type(data):
@@ -79,6 +82,7 @@ def tfidf(data, data_test,n):
     return X_Tfidf,X_Tfidf_test
 
 def classifier(type):
+    '''Returns classifire of the given type.'''
     if type == "naive":
         clf = naive_bayes.MultinomialNB()
     elif type == "knn":
@@ -97,28 +101,31 @@ def classifier(type):
     return clf
 
 def ensemble(clf,clf2):
+    '''Returns ensemble classifier that consists of clf and clf2 - two classifiers.'''
     enClassfier = VotingClassifier(estimators=[('gb', clf), ('svm', clf2)])
     return enClassfier
 
 
 def main():
-    learnset = ''
     testset = ''
     classif = ''
+    representation = "tf-idf"
     try:
-        opts, args = getopt.getopt(sys.argv[2:], "ht:c:", ["test=", "clf="])
+        opts, args = getopt.getopt(sys.argv[2:], "ht:c:b", ["test=", "clf="])
     except getopt.GetoptError:
-        print('__main__.py <learnset> -t <testset> -c <classifier>')
+        print('__main__.py <learnset> -t <testset> -c <classifier> [-b]')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print ('__main__.py <learnset> -t <testset> -c <classifier>')
+            print ('__main__.py <learnset> -t <testset> -c <classifier> [-b]')
             sys.exit()
         elif opt in ("-t", "--test"):
             testset = arg
         elif opt in ("-c", "--clf"):
             classif = arg
-    print(classif)
+        elif opt == '-b':
+            representation = "bag"
+    print("Classifier: "+classif)
     learnset= sys.argv[1]
     data = read_txt(learnset)
     if classif == '':
@@ -127,19 +134,15 @@ def main():
         data_test = read_txt(testset)
     else:
         data_test =''
-    X, X_Test = txt_representation("tf-idf", data, data_test, 1)
+    X, X_Test = txt_representation(representation, data, data_test, 1)
     y = data['class']
-
 
     k_fold = KFold(n_splits=10, shuffle=True, random_state=None)
     clf = classifier(classif)
-    i = 0
-    scores = []
     cv_scores = cross_val_score(clf, X, y, cv=k_fold, n_jobs=1)
     print('cv_scores mean:{:.4f}'.format(np.mean(cv_scores)))
 
-
-
+    #printing results
     if testset!='':
         y_test = data_test['class']
         clf.fit(X,y)
@@ -147,8 +150,6 @@ def main():
         print("Train set Accuracy Score ->{:.4f} ".format(accuracy_score(predictions, y)))
         predictions = clf.predict(X_Test)
         print("Test set Accuracy Score ->{:.4f} ".format(accuracy_score(predictions, y_test)))
-
-
 
 
 if __name__ == '__main__':
